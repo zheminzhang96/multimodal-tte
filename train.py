@@ -24,6 +24,20 @@ SURVIVAL_FUSION_CHOICES = [
 FUSION_CHOICES = ["CLIP", *SURVIVAL_FUSION_CHOICES]
 
 
+def infer_ehr_dim(sample_batch):
+    """Infer EHR feature dimension from the dataloader output."""
+    if "demo_features" not in sample_batch:
+        raise KeyError("Expected dataloader batch to include 'demo_features'.")
+
+    features = sample_batch["demo_features"]
+    if features.ndim != 2:
+        raise ValueError(
+            "'demo_features' must be a 2D tensor shaped [batch_size, ehr_dim]. "
+            f"Got shape: {tuple(features.shape)}"
+        )
+    return int(features.shape[1])
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Train multimodal survival models on 2D MII embeddings.")
     parser.add_argument("--task", required=True, choices=["ascvd", "pe"])
@@ -97,13 +111,14 @@ def main():
     train_loader = data_loaders["train"]
     val_loader = data_loaders["val"]
     sample_batch = next(iter(train_loader))
-    ehr_dim = sample_batch["demo_features"].shape[1]
+    ehr_dim = infer_ehr_dim(sample_batch)
 
     run_name = f"{args.task}_{args.fusion_type}_MII_{args.ehr_type}"
     writer = SummaryWriter(log_dir=Config.LOG_DIR / run_name)
     ckpt_dir = Config.get_checkpoint_dir(args.task, "MII", args.ehr_type)
 
     print(f"Training {run_name} on {device}")
+    print(f"Detected EHR dimension: {ehr_dim}")
     print(f"Train samples: {data_sizes['train']} | Val samples: {data_sizes['val']}")
     print(f"Saving checkpoints to: {ckpt_dir}")
 

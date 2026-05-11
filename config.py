@@ -9,8 +9,6 @@ class Config:
 
     DIMS = {
         "MII": {"img": 1024},
-        "CLMBR": {"ehr": 768},
-        "ONEHOT": {"ehr": 128},
     }
 
     @staticmethod

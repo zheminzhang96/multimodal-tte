@@ -36,6 +36,8 @@ pip install -r requirements.txt
 
 The data are not distributed with this repository. To run the code, prepare local metadata files and 2D embedding files that match the schemas below.
 
+EHR feature dimensions are inferred from the metadata at runtime. This allows ASCVD and PE to use different `ONEHOT` vector lengths.
+
 ### ASCVD Metadata
 
 ASCVD metadata should be a CSV file with these columns:

@@ -8,7 +8,7 @@ from torchsurv.metrics.cindex import ConcordanceIndex
 
 from config import Config
 from datasets.build_dataset import build_dataset
-from train import SURVIVAL_FUSION_CHOICES, build_optional_clip_model
+from train import SURVIVAL_FUSION_CHOICES, build_optional_clip_model, infer_ehr_dim
 from util.helpers import bootstrap_ci, load_model_with_flex, prepare_batch_inputs
 from util.uniform_models import ModelFactory
 
@@ -84,8 +84,9 @@ def main():
 
     test_loader = data_loaders[args.evaluation_set]
     sample_batch = next(iter(test_loader))
-    ehr_dim = sample_batch["demo_features"].shape[1]
+    ehr_dim = infer_ehr_dim(sample_batch)
     print(f"Evaluating {args.task}_{args.fusion_type}_MII_{args.ehr_type} on {args.evaluation_set}")
+    print(f"Detected EHR dimension: {ehr_dim}")
     print(f"Samples: {data_sizes[args.evaluation_set]} | Device: {device}")
 
     clip_model = build_optional_clip_model(args, ehr_dim, device)
