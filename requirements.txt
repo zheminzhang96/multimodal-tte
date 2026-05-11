@@ -1,0 +1,11 @@
+# Minimal pip requirements for the public ASCVD/PE 2D embedding workflow.
+# These are derived from the existing project environment and public imports.
+#
+# For a specific CUDA build of PyTorch, install torch from the official PyTorch
+# index matching your system before or instead of this line.
+torch==2.5.1
+torchsurv==0.1.5
+numpy==2.2.6
+pandas==2.3.3
+scipy==1.15.3
+tensorboard==2.20.0
