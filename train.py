@@ -18,7 +18,7 @@ SURVIVAL_FUSION_CHOICES = [
     "Concat",
     "ConcatCLIP",
     "CrossAttn",
-    "CrossAttnCLIP",
+    #"CrossAttnCLIP",
     "CoAttn",
 ]
 FUSION_CHOICES = ["CLIP", *SURVIVAL_FUSION_CHOICES]
