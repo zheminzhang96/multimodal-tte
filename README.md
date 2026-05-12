@@ -7,6 +7,12 @@ This repository contains the public, reproducible code for multimodal survival m
 
 Private patient data, metadata files, embeddings, checkpoints, notebooks, and generated outputs are not included. The public workflow uses precomputed 2D MII image embeddings plus EHR feature vectors only.
 
+## Patient-Level Data Split
+
+| Task | Internal Train | Internal Validation | Internal Test | External Test |
+|---|---:|---:|---:|---:|
+| PE Mortality Prediction | 2,439 (64.78%) | 268 (7.12%) | 1,058 (28.10%) | 396 |
+| MACE Prediction | 2,835 (71.3%) | 330 (8.3%) | 809 (20.4%) | 665 |
 ## Repository Layout
 
 ```text
