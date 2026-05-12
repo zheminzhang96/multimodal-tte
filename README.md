@@ -79,7 +79,7 @@ The ASCVD `slice_folder` is determined from `--slice_type` and `--window`:
 
 ### PE Metadata
 
-PE metadata should be a JSONL file with these columns:
+PE metadata should have these columns:
 
 - `split_name`: one of `train`, `val`, `test`.
 - `patient_id`
@@ -135,7 +135,7 @@ python train.py \
 Supported survival fusion strategies are:
 
 ```text
-ImageOnly, EHROnly, Concat, ConcatCLIP, CrossAttn, CrossAttnCLIP, CoAttn
+ImageOnly, EHROnly, Concat, ConcatCLIP, CrossAttn, CoAttn (image guide), CoAttn (EHR guide)
 ```
 
 ### CLIP Pretraining
