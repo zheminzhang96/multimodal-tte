@@ -18,7 +18,6 @@ SURVIVAL_FUSION_CHOICES = [
     "Concat",
     "ConcatCLIP",
     "CrossAttn",
-    #"CrossAttnCLIP",
     "CoAttn",
 ]
 FUSION_CHOICES = ["CLIP", *SURVIVAL_FUSION_CHOICES]
@@ -53,7 +52,7 @@ def parse_args():
     parser.add_argument("--ehr_type", default="CLMBR", choices=["CLMBR", "ONEHOT"])
     parser.add_argument("--slice_type", default="heart", choices=["heart", "LCS_slice"])
     parser.add_argument("--window", default="", help="ASCVD: soft/full. PE: Lung/PE/Soft tissue.")
-    parser.add_argument("--clip_ckpt_path", default="", help="Required for ConcatCLIP or CrossAttnCLIP.")
+    parser.add_argument("--clip_ckpt_path", default="", help="Required for ConcatCLIP.")
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--batch_size", type=int, default=12)
     parser.add_argument("--num_workers", type=int, default=8)
@@ -67,7 +66,7 @@ def parse_args():
 
 
 def build_optional_clip_model(args, ehr_dim, device):
-    if args.fusion_type not in {"ConcatCLIP", "CrossAttnCLIP"}:
+    if args.fusion_type != "ConcatCLIP":
         return None
     if not args.clip_ckpt_path:
         raise ValueError("--clip_ckpt_path is required for CLIP-initialized fusion models.")

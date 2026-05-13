@@ -107,6 +107,33 @@ Use `--external_embedding_root` when the external cohort embeddings live under a
 
 ## Training
 
+### Supported Fusion Strategies
+
+The following fusion strategies are supported through the `--fusion_type` argument:
+
+```text
+ImageOnly
+EHROnly
+Concat
+ConcatCLIP
+CrossAttn
+CoAttn
+```
+
+For `CoAttn`, specify the guiding modality using:
+
+```bash
+--co_attn_guide image
+```
+
+or
+
+```bash
+--co_attn_guide ehr
+```
+
+### ASCVD Survival Prediction
+
 Train an ASCVD survival model:
 
 ```bash
@@ -115,10 +142,13 @@ python train.py \
   --metadata_file /path/to/ascvd_metadata.csv \
   --embedding_root /path/to/ascvd_embeddings \
   --fusion_type Concat \
+  --co_attn_guide image \
   --ehr_type CLMBR \
   --slice_type heart \
   --window soft
 ```
+
+### PE Survival Prediction
 
 Train a PE survival model:
 
@@ -128,17 +158,22 @@ python train.py \
   --metadata_file /path/to/pe_metadata.jsonl \
   --embedding_root /path/to/pe_embeddings \
   --fusion_type Concat \
+  --co_attn_guide image \
   --ehr_type CLMBR \
-  --window PE
+  --window Lung
 ```
 
-Supported survival fusion strategies are:
+## Contrastive Pretraining
 
+<<<<<<< HEAD
 ```text
 ImageOnly, EHROnly, Concat, ConcatCLIP, CrossAttn, CoAttn (image guide), CoAttn (EHR guide)
 ```
+=======
+The framework supports CLIP-style contrastive pretraining for aligning image and EHR embeddings before downstream survival prediction.
+>>>>>>> a4672cf (Update public training documentation)
 
-### CLIP Pretraining
+### Step 1: Train the CLIP Alignment Model
 
 Train the CLIP alignment model first:
 
@@ -150,6 +185,8 @@ python train.py \
   --fusion_type CLIP \
   --ehr_type CLMBR
 ```
+
+### Step 2: Train a Survival Model Using the Aligned Embedding Space
 
 Then train a CLIP-initialized survival model:
 
@@ -165,6 +202,10 @@ python train.py \
 
 ## Evaluation
 
+### Internal Evaluation
+
+Evaluate a trained model on the internal test set:
+
 ```bash
 python evaluate.py \
   --task ascvd \
@@ -175,7 +216,9 @@ python evaluate.py \
   --evaluation_set test
 ```
 
-For external evaluation:
+### External Evaluation
+
+Evaluate a trained model on an external dataset:
 
 ```bash
 python evaluate.py \

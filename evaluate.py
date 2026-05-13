@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument("--dropout", type=float, default=0.3)
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--ckpt_path", default="", help="Model checkpoint path.")
-    parser.add_argument("--clip_ckpt_path", default="", help="Required for ConcatCLIP or CrossAttnCLIP.")
+    parser.add_argument("--clip_ckpt_path", default="", help="Required for ConcatCLIP.")
     parser.add_argument("--results_dir", default="outputs/results")
     parser.add_argument("--n_boot", type=int, default=100)
     parser.add_argument("--co_attn_guide", default="image", choices=["image", "ehr"])
