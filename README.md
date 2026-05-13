@@ -1,11 +1,13 @@
 # Multimodal Survival Public
 
-This repository contains the public, reproducible code for multimodal survival modeling on two tasks:
+Public code for multimodal survival prediction using precomputed 2D MII image embeddings and EHR feature vectors.
+
+Supported tasks:
 
 - `ascvd`: ASCVD/MACE-or-death prediction.
 - `pe`: pulmonary embolism outcome prediction.
 
-Private patient data, metadata files, embeddings, checkpoints, notebooks, and generated outputs are not included. The public workflow uses precomputed 2D MII image embeddings plus EHR feature vectors only.
+Private patient data, metadata files, embeddings, checkpoints, notebooks, and generated outputs are not included.
 
 ## Patient-Level Data Split
 
@@ -13,6 +15,7 @@ Private patient data, metadata files, embeddings, checkpoints, notebooks, and ge
 |---|---:|---:|---:|---:|
 | PE Mortality Prediction | 2,439 (64.78%) | 268 (7.12%) | 1,058 (28.10%) | 396 |
 | MACE Prediction | 2,835 (71.3%) | 330 (8.3%) | 809 (20.4%) | 665 |
+
 ## Repository Layout
 
 ```text
@@ -48,7 +51,7 @@ EHR feature dimensions are inferred from the metadata at runtime. This allows AS
 
 ASCVD metadata should be a CSV file with these columns:
 
-- `split_name`: one of `train`, `val`, `test`.
+- `split_name`: one of `train`, `val`, or `test`.
 - `PatientID`
 - `AccessionNumber`
 - `heart_largest_cross_section_slice_index`
@@ -72,16 +75,18 @@ For `--slice_type LCS_slice`, files are expected as:
 
 The ASCVD `slice_folder` is determined from `--slice_type` and `--window`:
 
-- `--window soft`, `--slice_type heart`: `heart_soft`
-- `--window soft`, `--slice_type LCS_slice`: `LCS_slice_soft`
-- `--window full`, `--slice_type heart`: `heart`
-- `--window full`, `--slice_type LCS_slice`: `LCS_slice`
+```text
+--window soft --slice_type heart     -> heart_soft
+--window soft --slice_type LCS_slice -> LCS_slice_soft
+--window full --slice_type heart     -> heart
+--window full --slice_type LCS_slice -> LCS_slice
+```
 
 ### PE Metadata
 
-PE metadata should have these columns:
+PE metadata should be a JSONL file with these columns:
 
-- `split_name`: one of `train`, `val`, `test`.
+- `split_name`: one of `train`, `val`, or `test`.
 - `patient_id`
 - `AccessionNumber`
 - `heart_low_index`
@@ -105,11 +110,9 @@ If split subfolders exist, the loader will use:
 
 Use `--external_embedding_root` when the external cohort embeddings live under a different root.
 
-## Training
+## Fusion Strategies
 
-### Supported Fusion Strategies
-
-The following fusion strategies are supported through the `--fusion_type` argument:
+Supported `--fusion_type` values:
 
 ```text
 ImageOnly
@@ -120,21 +123,21 @@ CrossAttn
 CoAttn
 ```
 
-For `CoAttn`, specify the guiding modality using:
+For `CoAttn`, specify the guide modality:
 
 ```bash
 --co_attn_guide image
 ```
 
-or
+or:
 
 ```bash
 --co_attn_guide ehr
 ```
 
-### ASCVD Survival Prediction
+## Training
 
-Train an ASCVD survival model:
+### ASCVD Survival Prediction
 
 ```bash
 python train.py \
@@ -142,7 +145,6 @@ python train.py \
   --metadata_file /path/to/ascvd_metadata.csv \
   --embedding_root /path/to/ascvd_embeddings \
   --fusion_type Concat \
-  --co_attn_guide image \
   --ehr_type CLMBR \
   --slice_type heart \
   --window soft
@@ -150,32 +152,33 @@ python train.py \
 
 ### PE Survival Prediction
 
-Train a PE survival model:
-
 ```bash
 python train.py \
   --task pe \
   --metadata_file /path/to/pe_metadata.jsonl \
   --embedding_root /path/to/pe_embeddings \
   --fusion_type Concat \
-  --co_attn_guide image \
   --ehr_type CLMBR \
   --window Lung
 ```
 
+For `CoAttn`, add the same guide modality during training and evaluation:
+
+```bash
+--co_attn_guide image
+```
+
+or:
+
+```bash
+--co_attn_guide ehr
+```
+
 ## Contrastive Pretraining
 
-<<<<<<< HEAD
-```text
-ImageOnly, EHROnly, Concat, ConcatCLIP, CrossAttn, CoAttn (image guide), CoAttn (EHR guide)
-```
-=======
 The framework supports CLIP-style contrastive pretraining for aligning image and EHR embeddings before downstream survival prediction.
->>>>>>> a4672cf (Update public training documentation)
 
 ### Step 1: Train the CLIP Alignment Model
-
-Train the CLIP alignment model first:
 
 ```bash
 python train.py \
@@ -187,8 +190,6 @@ python train.py \
 ```
 
 ### Step 2: Train a Survival Model Using the Aligned Embedding Space
-
-Then train a CLIP-initialized survival model:
 
 ```bash
 python train.py \
@@ -202,9 +203,13 @@ python train.py \
 
 ## Evaluation
 
-### Internal Evaluation
+Use `--ckpt_path` if the checkpoint is not in the default location:
 
-Evaluate a trained model on the internal test set:
+```text
+outputs/checkpoints/<task>/ckpt_MII_<ehr_type>/<fusion_type>.pth
+```
+
+### ASCVD Internal Evaluation
 
 ```bash
 python evaluate.py \
@@ -213,23 +218,73 @@ python evaluate.py \
   --embedding_root /path/to/ascvd_embeddings \
   --fusion_type Concat \
   --ehr_type CLMBR \
+  --slice_type heart \
+  --window soft \
   --evaluation_set test
 ```
 
-### External Evaluation
+### ASCVD External Evaluation
 
-Evaluate a trained model on an external dataset:
+```bash
+python evaluate.py \
+  --task ascvd \
+  --metadata_file /path/to/ascvd_metadata.csv \
+  --embedding_root /path/to/ascvd_embeddings \
+  --external_metadata_file /path/to/external_ascvd_metadata.csv \
+  --external_embedding_root /path/to/external_ascvd_embeddings \
+  --fusion_type Concat \
+  --ehr_type CLMBR \
+  --slice_type heart \
+  --window soft \
+  --evaluation_set external
+```
+
+### PE Internal Evaluation
 
 ```bash
 python evaluate.py \
   --task pe \
   --metadata_file /path/to/pe_metadata.jsonl \
   --embedding_root /path/to/pe_embeddings \
-  --external_metadata_file /path/to/external_metadata.jsonl \
-  --external_embedding_root /path/to/external_embeddings \
   --fusion_type Concat \
   --ehr_type CLMBR \
+  --window Lung \
+  --evaluation_set test
+```
+
+### PE External Evaluation
+
+```bash
+python evaluate.py \
+  --task pe \
+  --metadata_file /path/to/pe_metadata.jsonl \
+  --embedding_root /path/to/pe_embeddings \
+  --external_metadata_file /path/to/external_pe_metadata.jsonl \
+  --external_embedding_root /path/to/external_pe_embeddings \
+  --fusion_type Concat \
+  --ehr_type CLMBR \
+  --window Lung \
   --evaluation_set external
+```
+
+For `ConcatCLIP`, include the CLIP checkpoint during evaluation:
+
+```bash
+--clip_ckpt_path outputs/checkpoints/ascvd/ckpt_MII_CLMBR/CLIP.pth
+```
+
+## Outputs
+
+Checkpoints are saved to:
+
+```text
+outputs/checkpoints/<task>/ckpt_MII_<ehr_type>/
+```
+
+Evaluation CSVs are saved to:
+
+```text
+outputs/results/
 ```
 
 ## Public Release Notes
