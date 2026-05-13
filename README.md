@@ -137,7 +137,7 @@ or:
 
 ## Training
 
-### ASCVD Survival Prediction
+### MACE Prediction
 
 ```bash
 python train.py \
@@ -150,7 +150,7 @@ python train.py \
   --window soft
 ```
 
-### PE Survival Prediction
+### PE Mortality Prediction
 
 ```bash
 python train.py \
